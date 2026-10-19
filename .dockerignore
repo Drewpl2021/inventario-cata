@@ -1,0 +1,50 @@
+# Lo que NO entra en la imagen de Docker.
+
+# Secretos y configuración local: la imagen recibe la configuración por variables
+.env
+.env.*
+!.env.example
+auth.json
+
+# Control de versiones y herramientas del editor o de IA
+.git
+.github
+.idea
+.vscode
+.claude
+.codex
+.cursor
+.mcp.json
+
+# Dependencias: se instalan dentro de la imagen
+node_modules
+vendor
+
+# Datos y archivos generados (la imagen arranca con las carpetas vacías)
+storage/app/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing
+storage/logs/*
+storage/pail
+bootstrap/cache/*.php
+public/build
+public/hot
+public/storage
+public/uploads
+
+# Pruebas y archivos de desarrollo
+tests
+phpunit.xml
+.phpunit.cache
+.phpunit.result.cache
+phpstan.neon
+*.log
+Thumbs.db
+.DS_Store
+
+# Guías del agente de IA y Laravel Boost (desarrollo)
+AGENTS.md
+CLAUDE.md
+boost.json

@@ -1,0 +1,15 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - config/
+        - database/factories/
+        - database/seeders/
+        - routes/
+    # Las migraciones ya ejecutadas no se modifican (cualquier cambio va en una
+    # migración nueva), por eso no se analizan.
+    level: 8
+    # Lee los tipos de las columnas desde el método casts() de cada modelo.
+    parseModelCastsMethod: true

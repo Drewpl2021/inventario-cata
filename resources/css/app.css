@@ -1,0 +1,174 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource/dancing-script/600.css';
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../views';
+@source '../js';
+
+/*
+ * Paleta institucional SIBIP (azul marino de los mockups).
+ * "indigo" se redefine con la misma gama para que las vistas anteriores
+ * hereden el color institucional sin reescribirlas una por una.
+ */
+@theme {
+    --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-lema: 'Dancing Script', 'Segoe Script', cursive;
+
+    --color-marino-50: #eef4fb;
+    --color-marino-100: #dbe7f6;
+    --color-marino-200: #b9d0ec;
+    --color-marino-300: #8cb2de;
+    --color-marino-400: #5a8ccc;
+    --color-marino-500: #2f6bb5;
+    --color-marino-600: #1d559c;
+    --color-marino-700: #134682;
+    --color-marino-800: #0b3b70;
+    --color-marino-900: #082c55;
+    --color-marino-950: #051d39;
+
+    --color-indigo-50: #eef4fb;
+    --color-indigo-100: #dbe7f6;
+    --color-indigo-200: #b9d0ec;
+    --color-indigo-300: #8cb2de;
+    --color-indigo-400: #5a8ccc;
+    --color-indigo-500: #2f6bb5;
+    --color-indigo-600: #1d559c;
+    --color-indigo-700: #134682;
+    --color-indigo-800: #0b3b70;
+    --color-indigo-900: #082c55;
+}
+
+/* Compatibilidad con Tailwind 3: los bordes sin color usan el gris claro. */
+@layer base {
+    *, ::after, ::before, ::backdrop, ::file-selector-button {
+        border-color: var(--color-slate-200, currentColor);
+    }
+
+    body {
+        background-color: #f3f6fb;
+        color: var(--color-slate-800);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@utility tarjeta {
+    @apply bg-white rounded-2xl border border-slate-200/80 shadow-sm;
+}
+
+@utility btn {
+    @apply inline-flex items-center justify-center gap-2 min-h-11 px-4 py-2 rounded-xl text-sm font-semibold transition cursor-pointer;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-marino-400 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+@utility btn-primario {
+    @apply btn bg-marino-800 text-white hover:bg-marino-900 shadow-sm;
+}
+@utility btn-secundario {
+    @apply btn bg-white text-slate-700 border border-slate-200 hover:bg-slate-50;
+}
+@utility btn-peligro {
+    @apply btn bg-rose-600 text-white hover:bg-rose-700;
+}
+@utility btn-exito {
+    @apply btn bg-emerald-600 text-white hover:bg-emerald-700;
+}
+@utility btn-icono {
+    @apply inline-flex items-center justify-center w-11 h-11 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-marino-800 transition cursor-pointer;
+}
+
+@utility campo {
+    @apply w-full min-h-11 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800;
+    @apply placeholder:text-slate-400 focus:outline-none focus:border-marino-500 focus:ring-2 focus:ring-marino-100;
+}
+@utility etiqueta-campo {
+    @apply block text-sm font-semibold text-slate-700 mb-1.5;
+}
+
+@utility badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap;
+}
+@utility badge-verde { @apply badge bg-emerald-50 text-emerald-700; }
+@utility badge-ambar { @apply badge bg-amber-50 text-amber-700; }
+@utility badge-rojo { @apply badge bg-rose-50 text-rose-700; }
+@utility badge-azul { @apply badge bg-marino-50 text-marino-700; }
+@utility badge-gris { @apply badge bg-slate-100 text-slate-600; }
+@utility badge-morado { @apply badge bg-purple-50 text-purple-700; }
+
+@utility menu-item {
+    @apply flex items-center gap-3 min-h-11 px-3.5 py-2 rounded-xl text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white;
+}
+@utility menu-item-activo {
+    @apply bg-marino-500 text-white shadow-sm hover:bg-marino-500;
+}
+
+@utility tabla {
+    @apply w-full text-left text-sm;
+}
+
+@layer components {
+    .tabla thead th {
+        padding: 0.75rem 1rem;
+        background-color: var(--color-slate-50);
+        color: var(--color-slate-500);
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .tabla tbody td {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid var(--color-slate-100);
+        vertical-align: middle;
+    }
+    /* Tablas anchas (vista previa de reportes): letra y celdas más compactas. */
+    .tabla-compacta { font-size: 0.75rem; }
+    .tabla-compacta thead th, .tabla-compacta tbody td { padding: 0.45rem 0.6rem; }
+
+    .tabla tbody tr:hover {
+        background-color: color-mix(in oklab, var(--color-slate-50) 70%, transparent);
+    }
+
+    /*
+     * Tablas que en pantallas pequeñas se muestran como tarjetas.
+     * Cada <td> lleva data-label con el nombre de su columna.
+     */
+    @media (max-width: 767px) {
+        .tabla-tarjetas thead { display: none; }
+        .tabla-tarjetas, .tabla-tarjetas tbody, .tabla-tarjetas tr, .tabla-tarjetas td { display: block; width: 100%; }
+        .tabla-tarjetas tbody tr { padding: 0.75rem 1rem; border-top: 1px solid var(--color-slate-100); }
+        .tabla-tarjetas tbody td {
+            display: flow-root;
+            padding: 0.3rem 0;
+            border: 0;
+            text-align: right;
+        }
+        .tabla-tarjetas tbody td::before {
+            content: attr(data-label);
+            float: left;
+            margin-right: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1.75rem;
+            color: var(--color-slate-400);
+            text-align: left;
+        }
+        .tabla-tarjetas tbody td:not([data-label])::before,
+        .tabla-tarjetas tbody td[data-label='']::before { content: none; }
+        .tabla-tarjetas tbody td[colspan] { justify-content: center; text-align: center; }
+    }
+}
+
+/* Botones táctiles cómodos: al menos 44 px en dispositivos táctiles. */
+@media (pointer: coarse) {
+    button, [type='submit'], [type='button'], select {
+        min-height: 44px;
+    }
+}
+
+@media print {
+    .no-imprimir { display: none !important; }
+}

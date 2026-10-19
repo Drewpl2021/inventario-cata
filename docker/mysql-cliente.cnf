@@ -1,0 +1,5 @@
+# Cliente MySQL/MariaDB dentro del contenedor (mysqldump de los respaldos).
+# La base corre en la red interna de Docker con un certificado autofirmado:
+# no se exige verificarlo (la conexión no sale del equipo).
+[client]
+ssl-verify-server-cert=off

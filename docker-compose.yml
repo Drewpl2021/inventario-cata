@@ -1,0 +1,104 @@
+# SIBIP con Docker. Guía paso a paso: DOCKER.md
+#
+#   cp .env.docker.example .env      (y complete las contraseñas)
+#   docker compose up -d --build
+#   docker compose --profile tools up -d phpmyadmin     (opcional)
+
+name: sibip
+
+x-sibip: &sibip
+  build:
+    context: .
+  image: sibip:latest
+  env_file: ${SIBIP_ENV_FILE:-.env}
+  restart: unless-stopped
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  # Sitio web (Nginx + PHP-FPM). Al arrancar: migraciones, datos base y cachés.
+  app:
+    <<: *sibip
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - archivos:/var/www/html/storage/app/private
+      - respaldos:/var/www/html/storage/app/respaldos
+      - sistema:/var/www/html/storage/app/sistema
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/up"]
+      interval: 30s
+      timeout: 5s
+      start_period: 120s
+      retries: 3
+
+  # Cola: Excel grandes y latido de la cola.
+  queue:
+    <<: *sibip
+    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--max-time=3600", "--timeout=900"]
+    stop_signal: SIGTERM
+    volumes:
+      - archivos:/var/www/html/storage/app/private
+      - sistema:/var/www/html/storage/app/sistema
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+
+  # Programador: respaldo diario (02:30) y latidos del cron.
+  scheduler:
+    <<: *sibip
+    command: ["php", "artisan", "schedule:work"]
+    volumes:
+      - archivos:/var/www/html/storage/app/private
+      - respaldos:/var/www/html/storage/app/respaldos
+      - sistema:/var/www/html/storage/app/sistema
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-sibip}
+      MYSQL_USER: ${DB_USERNAME:-sibip}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD en el .env}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Defina DB_ROOT_PASSWORD en el .env}
+      TZ: America/Lima
+    volumes:
+      - db-datos:/var/lib/mysql
+    # Sin puertos publicados: solo los otros servicios llegan a la base.
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 10
+
+  # Administrador de la base por navegador. Solo con:  docker compose --profile tools up -d
+  phpmyadmin:
+    image: phpmyadmin:5
+    profiles: ["tools"]
+    restart: unless-stopped
+    ports:
+      - "${PMA_PORT:-8081}:80"
+    environment:
+      PMA_HOST: db
+      UPLOAD_LIMIT: 64M
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-datos:
+  archivos:
+  respaldos:
+  sistema:
